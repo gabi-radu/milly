@@ -1,0 +1,60 @@
+{
+  "name": "Milly",
+  "padlock": "krwBZCr74bWJuAgDM493ZA==!c29lvvDmxf3fk+6hakcnoy+3TbKusSAuy/dKHUdiWDEr36dBUO3Tj2Uy+YJ1dwvA",
+  "version": "2.0",
+  "services": [
+    {
+      "tenantId": "928fe2ff-2738-4351-9fca-05f3d6e07356",
+      "subscriptionId": "e295b8a9-4379-4c16-8de8-99947efbb98e",
+      "resourceGroup": "mortgagelifecoach-resources",
+      "serviceName": "Milly",
+      "type": "abs",
+      "name": "Milly",
+      "id": "1"
+    },
+    {
+      "connectionString": "VNaTWcS4fCyD0thg6mDWMA==!YEsnAp2GrJ6o07kWGuRu+pkuFyVh6eutxfSQVEBArnN0LCqM9lKM6cKlJ/Hh+Lh+eH3EzEsi12RjbZsKkL+t+ugoVSDLb+RRQS/ioA1C7kl/7p11Hk8o7b6U09ItW/T2fdo/oBEZsAlOKnxbWMJZUBs8E1FCEwF6uU/o4RegdiAivSTx8ub99c2hdOFCnzyRYWLTBqZ9ittozPby+rvTOw==",
+      "tenantId": "928fe2ff-2738-4351-9fca-05f3d6e07356",
+      "subscriptionId": "e295b8a9-4379-4c16-8de8-99947efbb98e",
+      "resourceGroup": "mortgagelifecoach-resources",
+      "serviceName": "milly9303",
+      "type": "blob",
+      "id": "2"
+    },
+    {
+      "appId": "",
+      "appPassword": "",
+      "endpoint": "http://localhost:3978/api/messages",
+      "type": "endpoint",
+      "name": "development",
+      "id": "3"
+    },
+    {
+      "appId": "286723bb-affe-47d2-ac68-d6717670d6e9",
+      "appPassword": "8GsMgXVknf7wYZoz8Uwd0w==!DhgtOGLZJNaZnPAmUwEf0Npw3+pUNle5tpSNsEEsCbA=",
+      "endpoint": "https://milly.azurewebsites.net/api/messages",
+      "type": "endpoint",
+      "name": "production",
+      "id": "4"
+    },
+    {
+      "instrumentationKey": "H/pG0FwX+xtDZoWWGnvzrw==!q4rakQGzgKH7SShSG9YFN41X1g/R509Np/060+krpTjvwnbVtZ5wcI/pcrpPiq8H",
+      "applicationId": "cb31ef3e-b748-4d2c-9678-a95783a12ec3",
+      "apiKeys": {},
+      "tenantId": "928fe2ff-2738-4351-9fca-05f3d6e07356",
+      "subscriptionId": "e295b8a9-4379-4c16-8de8-99947efbb98e",
+      "resourceGroup": "mortgagelifecoach-resources",
+      "serviceName": "Millylm7ypt",
+      "type": "appInsights",
+      "id": "5"
+    },
+    {
+      "appId": "654c2f0e-2e23-4622-8fa5-e558f9f7a17b",
+      "authoringKey": "/8Q5GVoFeiSTImoRRAuVkA==!Qcat53E09zrtlRxQFayus6K4MPhDwg0HvFDXMx8C4MY9sQNFfWtqlJ814OfioKR1",
+      "region": "westeurope",
+      "type": "luis",
+      "name": "BasicBotLuisApplication",
+      "id": "6"
+    }
+  ]
+}
