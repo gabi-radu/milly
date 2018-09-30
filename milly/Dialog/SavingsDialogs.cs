@@ -92,8 +92,8 @@ namespace BasicBot.Dialog
             /// <summary>Gets the options for the top-level dialog.</summary>
             public static List<WelcomeChoice> WelcomeOptions { get; } = new List<WelcomeChoice>
             {
-                new WelcomeChoice { Description = "Get the best deal", DialogName = Dialogs.Renew },
-                new WelcomeChoice { Description = "Customise offer", DialogName = Dialogs.Explore },
+                new WelcomeChoice { Description = "Apply now", DialogName = Dialogs.ApplyOnline },
+                new WelcomeChoice { Description = "View details", DialogName = Dialogs.Renew },
                 new WelcomeChoice { Description = "Remind me later", DialogName = Dialogs.RemindLater },
             };
 
@@ -108,6 +108,16 @@ namespace BasicBot.Dialog
                 get
                 {
                     var reprompt = MessageFactory.SuggestedActions(_welcomeList, "Please choose an option");
+                    reprompt.AttachmentLayout = AttachmentLayoutTypes.List;
+                    return reprompt as Activity;
+                }
+            }
+
+            public static Activity WelcomePrompt
+            {
+                get
+                {
+                    var reprompt = MessageFactory.SuggestedActions(_welcomeList, "How would you like to continue?");
                     reprompt.AttachmentLayout = AttachmentLayoutTypes.List;
                     return reprompt as Activity;
                 }
@@ -163,6 +173,10 @@ namespace BasicBot.Dialog
                 await stepContext.Context.SendActivityAsync(activity);
                 Thread.Sleep(3000);
 
+                await stepContext.Context.SendActivityAsync("Great news! Your house value went **up by 17%**.");
+                await stepContext.Context.SendActivityAsync(activity);
+                Thread.Sleep(1000);
+
                 stepContext.Values[Outputs.GivenName] = givenname;
                 stepContext.Values[Outputs.UserName] = username;
                 stepContext.Values[Outputs.CurrentMortgage] = deals.Item1;
@@ -172,11 +186,12 @@ namespace BasicBot.Dialog
                 await stepContext.Context.SendActivityAsync(
                     ProcessDeals(username),
                     cancellationToken: cancellationToken);
+
                 return await stepContext.PromptAsync(
                     Inputs.Choice,
                     new PromptOptions
                     {
-                        Prompt = MessageFactory.Text("How would you like to continue?"),
+                        Prompt = Lists.WelcomePrompt,
                         RetryPrompt = Lists.WelcomeReprompt,
                         Choices = Lists.WelcomeChoices,
                     },
@@ -190,6 +205,12 @@ namespace BasicBot.Dialog
                 // Begin a child dialog associated with the chosen option.
                 var choice = (FoundChoice)stepContext.Result;
                 var dialogId = Lists.WelcomeOptions[choice.Index].DialogName;
+
+                if (dialogId == Dialogs.ApplyOnline)
+                {
+                    await stepContext.Context.SendActivityAsync("Thank you. [Click here](https://personal.rbs.co.uk/personal/mortgages/secure/mortgage-agreement-in-principle.html) to complete your paperless application today.", cancellationToken: cancellationToken);
+                    return await stepContext.CancelAllDialogsAsync(cancellationToken);
+                }
 
                 return await stepContext.BeginDialogAsync(dialogId, stepContext.Values, cancellationToken);
             }
@@ -206,10 +227,9 @@ namespace BasicBot.Dialog
             {
                 var customerData = CustomerData.Find(username);
 
-                var maxTermReduction = customerData.Item2.Max(m => customerData.Item1.Term - m.Term);
-                var maxSaving = customerData.Item2.Max(m => customerData.Item1.TotalRepayment - m.TotalRepayment);
+                var maxSavingDeal = customerData.Item2.OrderBy(m => m.TotalRepayment).First();
 
-                return string.Format("You can save up to **£{0:0.##}k** and reduce your term by up to {1} years.", maxSaving / 1000, maxTermReduction);
+                return string.Format("For **just £{0:0}** extra per month, you can **save up to £{1:0}k** and reduce your term by up to {2} years.", maxSavingDeal.MonthlyRepayment - customerData.Item1.MonthlyRepayment, (customerData.Item1.TotalRepayment - maxSavingDeal.TotalRepayment) / 1000, customerData.Item1.Term - maxSavingDeal.Term);
             }
         }
 
