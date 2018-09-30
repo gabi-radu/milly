@@ -145,6 +145,16 @@ namespace BasicBot.Dialog
                     return reprompt as Activity;
                 }
             }
+
+            public static Activity BestDealPrompt
+            {
+                get
+                {
+                    var reprompt = MessageFactory.SuggestedActions(_bestDealList, "How would you like to continue?");
+                    reprompt.AttachmentLayout = AttachmentLayoutTypes.List;
+                    return reprompt as Activity;
+                }
+            }
         }
 
         /// <summary>
@@ -157,7 +167,7 @@ namespace BasicBot.Dialog
                 CancellationToken cancellationToken)
             {
                 var username = "mike4mail@gmail.com";
-                var givenname = "Simon";
+                var givenname = "Stephen";
 
                 var deals = CustomerData.Find(username);
 
@@ -266,22 +276,29 @@ namespace BasicBot.Dialog
 
                 var currentDeal = (Mortgage)((IDictionary<string, object>)stepContext.Options)[Outputs.CurrentMortgage];
 
-                await stepContext.Context.SendActivityAsync(
-                    string.Format("Your current mortgage balance is £{0:0.##}k and your current deal is {1}. You pay £{2:0.##} per month and it will take you {3} years to clear your balance, for a total cost of £{4:0.##}k.", currentDeal.Balance / 1000, currentDeal.Description, currentDeal.MonthlyRepayment, currentDeal.Term, currentDeal.TotalRepayment / 1000), cancellationToken: cancellationToken);
+                //await stepContext.Context.SendActivityAsync(
+                //    string.Format("Your current mortgage balance is £{0:0.##}k and your current deal is {1}. You pay £{2:0.##} per month and it will take you {3} years to clear your balance, for a total cost of £{4:0.##}k.", currentDeal.Balance / 1000, currentDeal.Description, currentDeal.MonthlyRepayment, currentDeal.Term, currentDeal.TotalRepayment / 1000), cancellationToken: cancellationToken);
 
-                await stepContext.Context.SendActivityAsync(activity);
-                Thread.Sleep(2000);
+                //await stepContext.Context.SendActivityAsync(activity);
+                //Thread.Sleep(2000);
 
                 var bestDeal = (((IDictionary<string, object>)stepContext.Options)[Outputs.AvailableDeals] as IEnumerable<Mortgage>).OrderBy(m => m.TotalRepayment).First();
 
-                await stepContext.Context.SendActivityAsync(
-                    string.Format("By increasing your monthly payments to £{0:0.##} and reducing your term to {1} years, your total repayment cost could be as low as £{2:0.##}k, saving you up to £{3:0.##}k. This is a {4} deal.", bestDeal.MonthlyRepayment, bestDeal.Term, bestDeal.TotalRepayment / 1000, (currentDeal.TotalRepayment - bestDeal.TotalRepayment) / 1000, bestDeal.Description), cancellationToken: cancellationToken);
+                //await stepContext.Context.SendActivityAsync(
+                //    string.Format("By increasing your monthly payments to £{0:0.##} and reducing your term to {1} years, your total repayment cost could be as low as £{2:0.##}k, saving you up to £{3:0.##}k. This is a {4} deal.", bestDeal.MonthlyRepayment, bestDeal.Term, bestDeal.TotalRepayment / 1000, (currentDeal.TotalRepayment - bestDeal.TotalRepayment) / 1000, bestDeal.Description), cancellationToken: cancellationToken);
+
+                await stepContext.Context.SendActivityAsync(string.Format(@"|       | Current  &nbsp; &nbsp; | Our best offer |
+| ----- | ----- | ----- |
+| Deal | {0} | {1} |
+| Monthly Rate | £{2:0} | £{3:0} |
+| Term | {4} | {5} |
+| Total Repayment  &nbsp; &nbsp; | £{6:0.##}k | £{7:0.##}k |", currentDeal.Description,bestDeal.Description,currentDeal.MonthlyRepayment,bestDeal.MonthlyRepayment,currentDeal.Term,bestDeal.Term,currentDeal.TotalRepayment/1000,bestDeal.TotalRepayment/1000), cancellationToken: cancellationToken);
 
                 return await stepContext.PromptAsync(
                     Inputs.Choice,
                     new PromptOptions
                     {
-                        Prompt = MessageFactory.Text("How would you like to continue?"),
+                        Prompt = Lists.BestDealPrompt,
                         RetryPrompt = Lists.BestDealReprompt,
                         Choices = Lists.BestDealChoices,
                     },
