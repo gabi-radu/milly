@@ -9,7 +9,7 @@ namespace BasicBot.Models
         {
             {
                 "mike4mail@gmail.com",
-                new Mortgage { Type = MortgageType.Variable, IsUpForRenewal = true, Balance = 183503.12M, InterestRate = 7, Term = 23, Description = "SVR 7%" }
+                new Mortgage { Type = MortgageType.Variable, IsUpForRenewal = true, Balance = 123500M, InterestRate = 3.99M, Term = 23, Description = "SVR 3.99%" }
             },
         };
 
@@ -29,39 +29,12 @@ namespace BasicBot.Models
                     new Mortgage
                     {
                         Balance = currentMortgage.Balance,
-                        Term = currentMortgage.Term,
+                        Term = currentMortgage.Term - 7,
                         IsUpForRenewal = false,
-                        InterestRate = currentMortgage.InterestRate - 2,
-                        Type = MortgageType.Fixed5Years,
-                        Description = string.Format("Fixed 5 years {0}%", currentMortgage.InterestRate - 2),
-                    },
-                    new Mortgage
-                    {
-                        Balance = currentMortgage.Balance,
-                        Term = currentMortgage.Term,
-                        IsUpForRenewal = false,
-                        InterestRate = currentMortgage.InterestRate - 4,
+                        InterestRate = 1.35M,
                         Type = MortgageType.Fixed2Years,
-                        Description = string.Format("Fixed 2 years {0}%", currentMortgage.InterestRate - 2),
-                    },
-                    new Mortgage
-                    {
-                        Balance = currentMortgage.Balance,
-                        Term = currentMortgage.Term - 4,
-                        IsUpForRenewal = false,
-                        InterestRate = currentMortgage.InterestRate - 2,
-                        Type = MortgageType.Fixed5Years,
-                        Description = string.Format("Fixed 5 years {0}%", currentMortgage.InterestRate - 2),
-                    },
-                    new Mortgage
-                    {
-                        Balance = currentMortgage.Balance,
-                        Term = currentMortgage.Term - 10,
-                        IsUpForRenewal = false,
-                        InterestRate = currentMortgage.InterestRate - 4,
-                        Type = MortgageType.Fixed2Years,
-                        Description = string.Format("Fixed 2 years {0}%", currentMortgage.InterestRate - 4),
-                    },
+                        Description = string.Format("Fixed 2 years 1.35%"),
+                    }
                 };
             }
             else

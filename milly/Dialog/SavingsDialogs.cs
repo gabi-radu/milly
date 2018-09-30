@@ -239,7 +239,7 @@ namespace BasicBot.Dialog
 
                 var maxSavingDeal = customerData.Item2.OrderBy(m => m.TotalRepayment).First();
 
-                return string.Format("For **just £{0:0}** extra per month, you can **save up to £{1:0}k** and reduce your term by up to {2} years.", maxSavingDeal.MonthlyRepayment - customerData.Item1.MonthlyRepayment, (customerData.Item1.TotalRepayment - maxSavingDeal.TotalRepayment) / 1000, customerData.Item1.Term - maxSavingDeal.Term);
+                return string.Format("For **just £{0:0}** extra per month, you can **save up to £{1:0}k** and reduce your term by {2} years.", maxSavingDeal.MonthlyRepayment - customerData.Item1.MonthlyRepayment, (customerData.Item1.TotalRepayment - maxSavingDeal.TotalRepayment) / 1000, customerData.Item1.Term - maxSavingDeal.Term);
             }
         }
 
@@ -292,7 +292,8 @@ namespace BasicBot.Dialog
 | Deal | {0} | {1} |
 | Monthly Rate | £{2:0} | £{3:0} |
 | Term | {4} | {5} |
-| Total Repayment  &nbsp; &nbsp; | £{6:0.##}k | £{7:0.##}k |", currentDeal.Description,bestDeal.Description,currentDeal.MonthlyRepayment,bestDeal.MonthlyRepayment,currentDeal.Term,bestDeal.Term,currentDeal.TotalRepayment/1000,bestDeal.TotalRepayment/1000), cancellationToken: cancellationToken);
+| Balance | £{6:0.##}k | £{7:0.##}k |
+| Total Repayment  &nbsp; &nbsp; | £{8:0.##}k | £{9:0.##}k |", currentDeal.Description,bestDeal.Description,currentDeal.MonthlyRepayment,bestDeal.MonthlyRepayment,currentDeal.Term,bestDeal.Term,currentDeal.Balance/1000,currentDeal.Balance/1000,currentDeal.TotalRepayment/1000,bestDeal.TotalRepayment/1000), cancellationToken: cancellationToken);
 
                 return await stepContext.PromptAsync(
                     Inputs.Choice,
