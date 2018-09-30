@@ -92,8 +92,8 @@ namespace BasicBot.Dialog
             /// <summary>Gets the options for the top-level dialog.</summary>
             public static List<WelcomeChoice> WelcomeOptions { get; } = new List<WelcomeChoice>
             {
-                new WelcomeChoice { Description = "Show me the best deal", DialogName = Dialogs.Renew },
-                new WelcomeChoice { Description = "Customise my offer", DialogName = Dialogs.Explore },
+                new WelcomeChoice { Description = "Get the best deal", DialogName = Dialogs.Renew },
+                new WelcomeChoice { Description = "Customise offer", DialogName = Dialogs.Explore },
                 new WelcomeChoice { Description = "Remind me later", DialogName = Dialogs.RemindLater },
             };
 
@@ -116,8 +116,8 @@ namespace BasicBot.Dialog
             /// <summary>Gets the options for the food-selection dialog.</summary>
             public static List<WelcomeChoice> BestDealOptions { get; } = new List<WelcomeChoice>
             {
-                new WelcomeChoice { Description = "Apply online now", DialogName = Dialogs.ApplyOnline },
-                new WelcomeChoice { Description = "Request advisor call back", DialogName = Dialogs.CallBack },
+                new WelcomeChoice { Description = "Apply online", DialogName = Dialogs.ApplyOnline },
+                new WelcomeChoice { Description = "Call me", DialogName = Dialogs.CallBack },
             };
 
             private static readonly List<string> _bestDealList = BestDealOptions.Select(x => x.Description).ToList();
@@ -155,7 +155,11 @@ namespace BasicBot.Dialog
                 activity.Type = ActivityTypes.Typing;
                 activity.Text = "";
 
-                await stepContext.Context.SendActivityAsync("Hello " + givenname + "!");
+                await stepContext.Context.SendActivityAsync("Hi " + givenname + "!");
+                await stepContext.Context.SendActivityAsync(activity);
+                Thread.Sleep(2000);
+
+                await stepContext.Context.SendActivityAsync("We are analysing your current mortgage deal and spending patterns.");
                 await stepContext.Context.SendActivityAsync(activity);
                 Thread.Sleep(3000);
 
@@ -205,7 +209,7 @@ namespace BasicBot.Dialog
                 var maxTermReduction = customerData.Item2.Max(m => customerData.Item1.Term - m.Term);
                 var maxSaving = customerData.Item2.Max(m => customerData.Item1.TotalRepayment - m.TotalRepayment);
 
-                return string.Format("We have analysed your mortgage and spending pattern for the past 12 months and have determined you can save up to £{0:0.##}k in interest and reduce your term by up to {1} years.", maxSaving / 1000, maxTermReduction);
+                return string.Format("You can save up to **£{0:0.##}k** and reduce your term by up to {1} years.", maxSaving / 1000, maxTermReduction);
             }
         }
 
@@ -278,7 +282,7 @@ namespace BasicBot.Dialog
                         await stepContext.Context.SendActivityAsync("One of our advisers will be with you shortly, on your mobile banking registered phone number.", cancellationToken: cancellationToken);
                         break;
                     case Dialogs.ApplyOnline:
-                        await stepContext.Context.SendActivityAsync("Thank you. [Click here](https://www.rbs.co.uk) to complete your paperless application today.", cancellationToken: cancellationToken);
+                        await stepContext.Context.SendActivityAsync("Thank you. [Click here](https://personal.rbs.co.uk/personal/mortgages/secure/mortgage-agreement-in-principle.html) to complete your paperless application today.", cancellationToken: cancellationToken);
                         break;
                 }
 

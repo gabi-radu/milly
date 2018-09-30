@@ -3,19 +3,14 @@
 
 // See https://github.com/microsoft/botbuilder-samples for a more comprehensive list of samples.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BasicBot;
 using BasicBot.Dialog;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Microsoft.BotBuilderSamples
 {
