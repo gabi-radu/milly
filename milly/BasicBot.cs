@@ -9,6 +9,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BasicBot;
+using BasicBot.Dialog;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
@@ -36,101 +38,46 @@ namespace Microsoft.BotBuilderSamples
 
         private readonly BotServices _services;
 
+        private readonly ILogger<BasicBot> _logger;
+
+        private readonly BotAccessors _accessors;
+
+        private readonly SavingsDialogs _dialogs;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BasicBot"/> class.
         /// </summary>
         /// <param name="botServices">Bot services.</param>
-        public BasicBot(BotServices services, ILoggerFactory loggerFactory)
+        public BasicBot(BotAccessors accessors, ILoggerFactory loggerFactory)
         {
-            _services = services ?? throw new ArgumentNullException(nameof(services));
-
-            // Verify LUIS configuration.
-            if (!_services.LuisServices.ContainsKey(LuisConfiguration))
-            {
-                throw new InvalidOperationException($"The bot configuration does not contain a service type of `luis` with the id `{LuisConfiguration}`.");
-            }
-
+            _logger = loggerFactory.CreateLogger<BasicBot>();
+            _logger.LogTrace("EchoBot turn start.");
+            _accessors = accessors;
+            _dialogs = new SavingsDialogs(_accessors.DialogStateAccessor);
         }
 
-
-        /// <summary>
-        /// Run every turn of the conversation. Handles orchestration of messages.
-        /// </summary>
-        /// <param name="turnContext">Bot Turn Context.</param>
-        /// <param name="cancellationToken">Task CancellationToken.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken)
+        public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var activity = turnContext.Activity;
+            var dc = await _dialogs.CreateContextAsync(turnContext, cancellationToken);
 
-            if (activity.Type == ActivityTypes.Message)
+            if (turnContext.Activity.Type == ActivityTypes.Message)
             {
-                // Perform a call to LUIS to retrieve results for the current activity message.
-                var luisResults = await _services.LuisServices[LuisConfiguration].RecognizeAsync(turnContext, cancellationToken).ConfigureAwait(false);
-
-                // If any entities were updated, treat as interruption.
-                // For example, "no my name is tony" will manifest as an update of the name to be "tony".
-                var topScoringIntent = luisResults?.GetTopScoringIntent();
-
-                var topIntent = topScoringIntent.Value.intent;
-                switch (topIntent)
+                await dc.ContinueDialogAsync(cancellationToken);
+                if (!turnContext.Responded)
                 {
-                    case GreetingIntent:
-                        await turnContext.SendActivityAsync("Hello.");
-                        break;
-                    case HelpIntent:
-                        await turnContext.SendActivityAsync("Let me try to provide some help.");
-                        await turnContext.SendActivityAsync("I understand greetings, being asked for help, or being asked to cancel what I am doing.");
-                        break;
-                    case CancelIntent:
-                        await turnContext.SendActivityAsync("I have nothing to cancel.");
-                        break;
-                    case NoneIntent:
-                    default:
-                        // Help or no intent identified, either way, let's provide some help.
-                        // to the user
-                        await turnContext.SendActivityAsync("I didn't understand what you just said to me.");
-                        break;
+                    await dc.BeginDialogAsync(SavingsDialogs.MainMenu, null, cancellationToken);
                 }
             }
-            else if (activity.Type == ActivityTypes.ConversationUpdate)
+            else if (turnContext.Activity.Type == ActivityTypes.ConversationUpdate)
             {
-                if (activity.MembersAdded.Any())
+                var activity = turnContext.Activity.AsConversationUpdateActivity();
+                if (activity.MembersAdded.Any(member => member.Id != activity.Recipient.Id))
                 {
-                    // Iterate over all new members added to the conversation.
-                    foreach (var member in activity.MembersAdded)
-                    {
-                        // Greet anyone that was not the target (recipient) of this message.
-                        // To learn more about Adaptive Cards, see https://aka.ms/msbot-adaptivecards for more details.
-                        if (member.Id != activity.Recipient.Id)
-                        {
-                            var welcomeCard = CreateAdaptiveCardAttachment();
-                            var response = CreateResponse(activity, welcomeCard);
-                            await turnContext.SendActivityAsync(response).ConfigureAwait(false);
-                        }
-                    }
+                    await dc.BeginDialogAsync(SavingsDialogs.MainMenu, null, cancellationToken);
                 }
             }
 
-        }
-
-        // Create an attachment message response.
-        private Activity CreateResponse(Activity activity, Attachment attachment)
-        {
-            var response = activity.CreateReply();
-            response.Attachments = new List<Attachment>() { attachment };
-            return response;
-        }
-
-        // Load attachment from file.
-        private Attachment CreateAdaptiveCardAttachment()
-        {
-            var adaptiveCard = File.ReadAllText(@".\Resources\welcomeCard.json");
-            return new Attachment()
-            {
-                ContentType = "application/vnd.microsoft.card.adaptive",
-                Content = JsonConvert.DeserializeObject(adaptiveCard),
-            };
+            await _accessors.ConversationState.SaveChangesAsync(turnContext, false, cancellationToken);
         }
     }
 }

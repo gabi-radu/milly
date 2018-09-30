@@ -3,15 +3,19 @@
 
 using System;
 using System.Linq;
+using BasicBot;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Integration;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Configuration;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.BotBuilderSamples
 {
@@ -67,6 +71,30 @@ namespace Microsoft.BotBuilderSamples
             // Create the connected services from .bot file.
             services.AddSingleton(sp => new BotServices(botConfig));
 
+            // Memory Storage is for local bot debugging only. When the bot
+            // is restarted, everything stored in memory will be gone.
+            IStorage dataStore = new MemoryStorage();
+
+            // Create and add conversation state.
+            var conversationState = new ConversationState(dataStore);
+            services.AddSingleton(conversationState);
+
+            // Create and register state accesssors.
+            // Acessors created here are passed into the IBot-derived class on every turn.
+            services.AddSingleton<BotAccessors>(sp =>
+            {
+                var options = sp.GetRequiredService<IOptions<BotFrameworkOptions>>().Value;
+
+                // Create the custom state accessor.
+                // State accessors enable other components to read and write individual properties of state.
+                var accessors = new BotAccessors(conversationState)
+                {
+                    DialogStateAccessor = conversationState.CreateProperty<DialogState>(BotAccessors.DialogStateAccessorName),
+                };
+
+                return accessors;
+            });
+
             // Retrieve current endpoint.
             var environment = _isProduction ? "production" : "development";
             var service = botConfig.Services.Where(s => s.Type == "endpoint" && s.Name == environment).FirstOrDefault();
@@ -74,10 +102,6 @@ namespace Microsoft.BotBuilderSamples
             {
                 throw new InvalidOperationException($"The .bot file does not contain an endpoint with name '{environment}'.");
             }
-
-            // Memory Storage is for local bot debugging only. When the bot
-            // is restarted, everything stored in memory will be gone.
-            IStorage dataStore = new MemoryStorage();
 
             // For production bots use the Azure Blob or
             // Azure CosmosDB storage providers. For the Azure
@@ -96,10 +120,6 @@ namespace Microsoft.BotBuilderSamples
             // const string DefaultBotContainer = "botstate";
             // var storageContainer = string.IsNullOrWhiteSpace(blobStorageConfig.Container) ? DefaultBotContainer : blobStorageConfig.Container;
             // IStorage dataStore = new Microsoft.Bot.Builder.Azure.AzureBlobStorage(blobStorageConfig.ConnectionString, storageContainer);
-
-            // Create and add conversation state.
-            var conversationState = new ConversationState(dataStore);
-            services.AddSingleton(conversationState);
 
             var userState = new UserState(dataStore);
             services.AddSingleton(userState);
